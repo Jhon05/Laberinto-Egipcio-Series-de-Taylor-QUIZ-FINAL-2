@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Laberinto Egipcio Rectangular · Series de Potencias</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    window.MathJax = {
+      tex: {inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']], processEscapes: true},
+      svg: {fontCache: 'global'},
+      options: {skipHtmlTags: ['script','noscript','style','textarea','pre','code']}
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+  <main id="app">
+    <section id="menu" class="screen active">
+      <div class="menu-card parchment">
+        <div class="seal">𓂀</div>
+        <h1>Laberinto Egipcio Rectangular</h1>
+        <p class="subtitle">Series de potencias · Taylor · Maclaurin · Convergencia</p>
+        <p class="intro">
+          Entra a la pirámide, recorre el laberinto en pantalla completa, encuentra los cuatro tesoros matemáticos y llega a la salida central. Resolverás retos sobre series de potencias, convergencia, Taylor y Maclaurin, con preguntas en LaTeX de alta calidad.
+        </p>
+        <div class="animal-picker" aria-label="Selección de ficha">
+          <button class="animal-choice selected" data-animal="🐈">🐈 Gato</button>
+          <button class="animal-choice" data-animal="🐕">🐕 Perro</button>
+          <button class="animal-choice" data-animal="🐇">🐇 Conejo</button>
+          <button class="animal-choice" data-animal="🐢">🐢 Tortuga</button>
+        </div>
+        <div class="menu-actions">
+          <button id="startBtn" class="primary" type="button" onclick="window.startGameFromButton && window.startGameFromButton(event)">Entrar a la pirámide</button>
+          <button id="howBtn" class="secondary">Cómo jugar</button>
+        </div>
+        <div class="mini-rules">
+          <span>🏺 4 tesoros</span><span>🌀 10 portales</span><span>𓉐 20 obstáculos</span><span>𓋹 30 botones trampa</span><span>📜 pregunta cada 20 pasos</span><span>𓏛 3 guardianes finales</span><span>🔒 5 bloqueos docentes</span><span>🕒 hora visible</span><span>📚 banco dinámico de preguntas</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="game" class="screen">
+      <header class="hud">
+        <div class="hud-block"><small>Nota</small><strong id="scoreHud">1.0</strong></div>
+        <div class="hud-block treasure-status"><small>Tesoros</small><strong id="treasureHud">0/4</strong></div>
+        <div class="hud-block"><small>Pasos</small><strong id="stepsHud">0</strong></div>
+        <div class="hud-block"><small>Dificultad</small><strong id="difficultyHud">Básico</strong></div>
+        <div class="hud-block clock-hud"><small>Hora</small><strong id="clockHud">--:--:--</strong></div>
+        <div class="hud-actions">
+          <button id="howGameBtn" class="small-btn">Cómo jugar</button>
+          <button id="finishBtn" class="small-btn danger">Finalizar</button>
+          <button id="mainMenuBtn" class="small-btn">Menú principal</button>
+        </div>
+      </header>
+      <div class="game-layout">
+        <div class="canvas-panel">
+          <canvas id="gameCanvas" aria-label="Laberinto egipcio rectangular de pantalla completa"></canvas>
+          <div class="canvas-caption">
+            Usa flechas o WASD. El laberinto rectangular ocupa toda la pantalla. Encuentra 4 tesoros y luego entra a la salida central.
+          </div>
+        </div>
+        <aside class="side-panel parchment">
+          <h2>Expedición</h2>
+          <div id="missionText" class="mission-text">Busca los cuatro tesoros del templo.</div>
+          <div class="legend">
+            <div><span>🏺</span> Tesoro: +1.0 si aciertas, −0.5 si fallas.</div>
+            <div><span>🌀</span> Portal: hay 10 y te transportan a otro portal al azar.</div>
+            <div><span>🧱</span> Obstáculo egipcio: hay 20 retos de mayor dificultad.</div>
+            <div><span>𓋹</span> Botón trampa: hay 30; si lo cruzas, cambia todo el laberinto.</div>
+            <div><span>𓆣</span> Bono: suma extra si respondes bien.</div>
+            <div><span>𓂀</span> Salida: se abre después de 4 tesoros.</div>
+            <div><span>𓏛</span> Guardianes finales: 3 retos avanzados en el único corredor seguro.</div>
+          </div>
+          <h3>Registro</h3>
+          <div id="eventLog" class="event-log"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <section id="questionModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-box question-box parchment">
+      <div class="question-head">
+        <div>
+          <span id="questionBadge" class="badge">Básico</span>
+          <h2 id="questionTitle">Pregunta</h2>
+        </div>
+        <button id="hintBtn" class="secondary compact">Ver pista</button>
+      </div>
+      <div id="questionText" class="question-text math-book"></div>
+      <div id="hintText" class="hint-text hidden math-book"></div>
+      <form id="answerForm" class="answers"></form>
+      <div id="feedbackBox" class="feedback hidden math-book"></div>
+      <div class="modal-actions">
+        <button id="submitAnswerBtn" class="primary" type="button">Responder</button>
+        <button id="continueBtn" class="secondary hidden" type="button">Continuar</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="howModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-box parchment how-box">
+      <h2>Cómo jugar</h2>
+      <div class="how-content math-book">
+        <p>
+          Este juego es una expedición matemática dentro de una pirámide egipcia. Tu ficha es un animal doméstico que debe recorrer un laberinto
+          de forma rectangular. El objetivo no es simplemente caminar: debes encontrar <strong>cuatro tesoros</strong>, resolver los retos asociados a ellos
+          y después llegar a la <strong>salida central</strong> del laberinto.
+        </p>
+        <p>
+          El movimiento se hace solamente con el teclado: usa las flechas \(\uparrow,\downarrow,\leftarrow,\rightarrow\) o las teclas
+          \(W,A,S,D\). La ficha avanza lentamente, como en un juego clásico de laberinto, y se detiene cuando sueltas la tecla.
+        </p>
+        <ul>
+          <li>Cada <strong>20 pasos</strong> aparece una pregunta normal.</li>
+          <li>Los <strong>tesoros</strong> son retos de nivel experto, no tienen pista, dan \(+1.0\) si respondes bien y restan \(-0.5\) si respondes mal.</li>
+          <li>Si fallas un tesoro, el laberinto cambia completamente, la salida se reubica y el animal aparece en el extremo opuesto a la nueva salida.</li>
+          <li>Hay <strong>10 portales</strong> distribuidos en el templo, pero ninguno aparece cerca de la salida final.</li>
+          <li>Hay <strong>20 obstáculos egipcios</strong> con preguntas de mayor dificultad.</li>
+          <li>Hay <strong>30 botones trampa</strong>. Cada vez que cruces uno, el laberinto cambia completamente de forma, se regeneran salida, portales, obstáculos y trampas, y la ficha aparece lejos de la nueva salida.</li>
+          <li>Las preguntas regulares no tienen tiempo límite y pueden mostrar pista. Los tesoros no tienen pista. La nota máxima es \(5.0\); si logras los cuatro tesoros y entras a la salida, obtienes \(5.0\).</li><li>Alrededor de la salida hay muchas casillas transportadoras: solo existe <strong>un corredor seguro</strong> para acceder a la casilla final sin ser enviado lejos.</li><li>En ese corredor seguro hay <strong>tres guardianes finales</strong>: son las preguntas avanzadas más difíciles del juego. Si fallas una, pierdes \(1.0\), el laberinto cambia completamente y el animal reaparece en el lugar más lejano a la nueva salida.</li>
+          <li>Durante la partida no se permite pantallazo, tecla Escape, clic derecho, cambio de ventana, minimización ni salida de pantalla completa. Cada evento activa un bloqueo docente. Después de cinco bloqueos, la expedición queda anulada. La hora del dispositivo permanece visible durante todo el juego y durante los bloqueos.</li>
+          <li>La retroalimentación explica por qué una respuesta es incorrecta y muestra el procedimiento matemático correcto.</li>
+        </ul>
+        <p>
+          Los temas evaluados son series de potencias, radio e intervalo de convergencia, polinomios de Taylor, series de Taylor y Maclaurin,
+          aproximación por derivación e integración de series, y uso de la serie geométrica. Las preguntas se presentan con LaTeX visible de alta calidad y opciones mezcladas para evitar patrones simples de respuesta.
+        </p>
+      </div>
+      <button id="closeHowBtn" class="primary">Entendido</button>
+    </div>
+  </section>
+
+  <section id="endModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-box parchment end-box">
+      <h2 id="endTitle">Expedición finalizada</h2>
+      <div id="endSummary" class="math-book"></div>
+      <div class="modal-actions">
+        <button id="downloadReportBtn" class="primary">Descargar informe HTML tipo libro</button>
+        <button id="restartBtn" class="secondary">Volver al menú</button>
+      </div>
+    </div>
+  </section>
+
+
+  <div id="deviceClock" class="device-clock" aria-live="polite">
+    <span class="clock-label">Hora del dispositivo</span>
+    <strong id="deviceClockValue">--:--:--</strong>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
